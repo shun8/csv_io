@@ -69,3 +69,10 @@ poetry run python sample.py
 ```sh
 poetry shell
 ```
+
+## CSV, Excelファイル操作
+`pandas`と`openpyxl`というパッケージを使用する予定。
+
+TODO: 必要になったら追記する  
+`pandas`: データの整形がやりやすくなる予定  
+`openpyxl`: Excelファイルの操作が可能
