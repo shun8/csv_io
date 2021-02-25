@@ -1,0 +1,45 @@
+sheets:
+  - name: ""
+    row_padding: 5
+    col_padding: 0
+    col_headers:
+      - index: 1
+        source:
+          sql: ""
+          data: ""
+          order: ""
+        font_color: ""
+        bg_color: ""
+        # 必要なら付け足す
+      - index: 2
+        source: ""
+          sql: ""
+          data: ""
+          order: ""
+        font_color: ""
+        bg_color: ""
+    rows:
+      - index: 1
+        source:
+          sql: ""
+          row_header: ""
+          data: ""
+          order: ""
+        font_color: ""
+        bg_color: ""
+        header_font_color: ""
+        header_bg_color: ""
+        # 必要なら付け足す
+      - index: 2
+        source:
+          sql: ""
+          row_header: ""
+          data: ""
+          order: ""
+        font_color: ""
+        bg_color: ""
+        header_font_color: ""
+        header_bg_color: ""
+        # 必要なら付け足す
+
+
