@@ -1,4 +1,4 @@
-# CSVインポート/アウトプット
+# CSVインポート/エクスポート
 python: 3.8.1 以上  
 poetry: 1.1.4 以上
 
@@ -76,3 +76,7 @@ poetry shell
 TODO: 必要になったら追記する  
 `pandas`: データの整形がやりやすくなる予定  
 `openpyxl`: Excelファイルの操作が可能
+
+## DBアクセス
+`psycopg2`: PostgreSQLドライバ
+
