@@ -1,0 +1,6 @@
+postgres:
+  dbname: ""
+  host: ""
+  port: 
+  user: ""
+  password: ""

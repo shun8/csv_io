@@ -1,7 +1,12 @@
+format: "xlsx"
+basefile: ""
 sheets:
-  - name: ""
+  # Sheetのindexのみ0始まり(sheetの並び変えが必要になったら実装)
+  - index: 0
+    name: ""
     row_padding: 5
     col_padding: 0
+    row_header_span: 1
     col_headers:
       - index: 1
         source:
@@ -22,7 +27,13 @@ sheets:
       - index: 1
         source:
           sql: ""
-          row_header: ""
+          group:
+            row_header: ""
+            col_headers:
+              - header_index: 1
+                col_header: ""
+              - header_index: 2
+                col_header: ""
           data: ""
           order: ""
         font_color: ""
@@ -33,7 +44,13 @@ sheets:
       - index: 2
         source:
           sql: ""
-          row_header: ""
+          group:
+            row_header: ""
+            col_headers:
+              - header_index: 1
+                header: ""
+              - header_index: 2
+                header: ""
           data: ""
           order: ""
         font_color: ""
