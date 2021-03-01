@@ -1,7 +1,9 @@
 format: "xlsx"
+# 絶対パスで記述
 basefile: ""
 sheets:
   # Sheetのindexのみ0始まり(sheetの並び変えが必要になったら実装)
+  # dbのマスタのorderは0始まりの連番前提
   - index: 0
     name: ""
     row_padding: 5
@@ -23,19 +25,23 @@ sheets:
           order: ""
         font_color: ""
         bg_color: ""
-    rows:
+    bodies:
       - index: 1
         source:
           sql: ""
           group:
-            row_header: ""
+            row_header: 
+              source: 
+                sql: ""
+                data: ""
+                order: ""
+              column_name: ""
             col_headers:
               - header_index: 1
-                col_header: ""
+                column_name: ""
               - header_index: 2
-                col_header: ""
+                column_name: ""
           data: ""
-          order: ""
         font_color: ""
         bg_color: ""
         header_font_color: ""
