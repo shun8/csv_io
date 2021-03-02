@@ -171,7 +171,7 @@ sheets:
         header_font_color: ""
         header_bg_color: ""
   - index: 2
-    name: "テストシート2"
+    name: "テストシート3"
     row_padding: 5
     col_padding: 0
     row_header_span: 2

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-import os
 import psycopg2
-import yaml
+import psycopg2.extras
 
 class PostgresClient:
 
@@ -20,12 +19,15 @@ class PostgresClient:
             host=self.HOST,
             port=self.PORT
         )
-        cur = conn.cursor()
+        # dict形式で結果を取得: https://qiita.com/itoufo/items/7306122497fd4f712bff
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cur.execute (sql)
+        results = cur.fetchall()
 
-        cur.execute(sql)
-        result = cur.fetchall()
+        dict_result = []
+        for row in results:
+            dict_result.append(dict(row))
 
         cur.close()
         conn.close()
-
-        return result
+        return dict_result

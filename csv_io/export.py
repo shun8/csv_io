@@ -16,26 +16,27 @@ p_output_file_path = sys.argv[2]
 p_yyyymm = sys.argv[3]
 
 # フォーマット定義読み込み
-with open(p_format_file, "r") as format_file:
-    format_config = yaml.load(format_file)
+with open(p_format_file, "r", encoding="utf-8") as format_file:
+    format_config = yaml.safe_load(format_file)
 
 # DB接続情報
 l_dirname = os.path.dirname(os.path.abspath(__file__))
-db_config = os.path.normpath(os.path.join(l_dirname, "../db_connection.yaml"))
-db_client = postgresclient.PostgresClient(yaml.load(db_config["postgres"]))
+with open(os.path.normpath(os.path.join(l_dirname, "../db_connection.yaml")), "r") as db_config:
+    l_db_config = yaml.safe_load(db_config)
+    db_client = postgresclient.PostgresClient(l_db_config["postgres"])
 # SQLファイル配置場所
 sql_dir = os.path.normpath(os.path.join(l_dirname, "../sql"))
 
 # アドレス計算用関数
 def calc_header_span(p_index, p_col_headers):
-    if p_index >= len(p_col_headers):
+    if p_index >= len(p_col_headers) - 1:
         return 1
-    return p_col_headers[p_index+1]["size"] * calc_col_index(p_index+1, p_col_headers)
+    return p_col_headers[p_index+1]["size"] * calc_header_span(p_index+1, p_col_headers)
 
 # ---- 出力ファイル作成処理 ----
 # フォーマット確認(TODO: csv増える予定)
 if format_config.get("format") not in ["xlsx"]:
-    print(format_config.get("format") " is not valid format.")
+    print(format_config.get("format") + " is not valid format.")
     sys.exit(1)
 
 # -- xlsx出力処理 --
@@ -53,7 +54,7 @@ else:
 for sheet in format_config["sheets"]:
     if sheet["name"] not in wb.sheetnames:
         wb.create_sheet(index=sheet["index"], title=sheet["name"])
-    ws = wb.worksheets[sheet["name"]]
+    ws = wb[sheet["name"]]
 
     row_i = sheet["row_padding"] + 1
     col_i = sheet["col_padding"] + 1
@@ -68,8 +69,8 @@ for sheet in format_config["sheets"]:
         l_table = db_client.execute(l_sql.format(p_yyyymm))
         l_table = sorted(l_table, key=lambda x: x[ds_conf["order"]])
         l_col_h = {
-            size: len(l_table),
-            indexes: {x[ds_conf["data"]]: x[ds_conf["order"]] for x in l_table}
+            "size": len(l_table),
+            "indexes": {x[ds_conf["data"]]: x[ds_conf["order"]] for x in l_table}
         }
         col_headers.append(l_col_h)
     for i in range(len(col_headers)):
@@ -79,14 +80,14 @@ for sheet in format_config["sheets"]:
     for i in range(len(col_headers)):
         l_span = col_headers[i+1]["size"] if i+1 < len(col_headers) else 1
         l_col_i = col_i
-        for h_txt in col_headers[i].keys():
+        for h_txt in col_headers[i]["indexes"].keys():
             # ↑のkeys() 3.6以降は順序が保存されるらしいのでそれ前提
             ws.cell(row_i, l_col_i, value=h_txt)
             l_col_i += l_span
             # col_header_confs["cell_style"]
         # col_header_confs["row_style"]
         # col_header_confs["last_col_style"] # colnum: l_col_i -1, right side
-        row_i++
+        row_i += 1
 
     # query bodies
     bodies = []
@@ -106,31 +107,31 @@ for sheet in format_config["sheets"]:
         l_ch_columns = ds_conf["group"]["col_headers"]
         l_ch_columns = sorted(l_ch_columns, key=lambda x: x["header_index"])
         l_body = {
-            table: l_table,
-            rh_indexes: l_rh_indexes,
-            rh_column_name: rh_ds_conf = ds_conf["group"]["row_header"]["column_name"]
-            ch_column_names: [x["column_name"] for x in l_ch_columns]
+            "table": l_table,
+            "rh_indexes": l_rh_indexes,
+            "rh_column_name": ds_conf["group"]["row_header"]["column_name"],
+            "ch_column_names": [x["column_name"] for x in l_ch_columns]
         }
-        bodies.append(l_boby)
+        bodies.append(l_body)
 
     # draw bodies
     for body in bodies:
         l_start_row = row_i
         row_header_span = sheet["row_header_span"]
-        for l_row in boby["table"]:
-            l_row_i = row_i + int(rh_indexes[l_row[body["rh_column_name"]]])
+        for l_row in body["table"]:
+            l_row_i = row_i + int(body["rh_indexes"][l_row[body["rh_column_name"]]])
             l_column_i = row_header_span + 1
             for i in range(len(col_headers)):
-                l_h_idx = int(col_headers[i]["indexes"][body["table"][body["ch_column_names"][i]]])
+                l_h_idx = int(col_headers[i]["indexes"][l_row[body["ch_column_names"][i]]])
                 l_column_i += l_h_idx * col_headers[i]["span"]
-            ws.cell(l_row_i, l_column_i, value=l_low[ds_conf["data"]])
+            ws.cell(l_row_i, l_column_i, value=l_row[ds_conf["data"]])
             # ds_conf["cell_style"]
         # draw row headers
-        for h_txt in body["rh_indexes"].keys()
+        for h_txt in body["rh_indexes"].keys():
             ws.cell(row_i, row_header_span, value=h_txt)
             # ds_conf["header_style"]
             # ds_conf["row_style"]
-            row_i++
+            row_i += 1
         # fill by 0
         # if ds_conf["fills_by_zero"]
         for i in range(l_start_row, row_i - 1):
