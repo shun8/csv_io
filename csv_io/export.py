@@ -115,6 +115,7 @@ for sheet in format_config["sheets"]:
 
     # draw bodies
     for body in bodies:
+        l_start_row = row_i
         row_header_span = sheet["row_header_span"]
         for l_row in boby["table"]:
             l_row_i = row_i + int(rh_indexes[l_row[body["rh_column_name"]]])
@@ -130,6 +131,12 @@ for sheet in format_config["sheets"]:
             # ds_conf["header_style"]
             # ds_conf["row_style"]
             row_i++
+        # fill by 0
+        # if ds_conf["fills_by_zero"]
+        for i in range(l_start_row, row_i - 1):
+            for j in range(col_headers[0]["size"] * col_headers[0]["span"]):
+                if ws.cell(i, row_header_span + j).value is None:
+                    ws.cell(i, row_header_span + j).value = 0
 
 wb.save(p_output_file_path)
 #Completed.

@@ -1,47 +1,47 @@
 format: "xlsx"
 # 絶対パスで記述
-basefile: ""
+#basefile: ""
 sheets:
   # Sheetのindexのみ0始まり(sheetの並び変えが必要になったら実装)
   # dbのマスタのorderは0始まりの連番前提
   - index: 0
-    name: ""
+    name: "テストシート1"
     row_padding: 5
     col_padding: 0
     row_header_span: 1
     col_headers:
       - index: 1
         source:
-          sql: ""
-          data: ""
-          order: ""
+          sql: "header0.sql"
+          data: "h_txt"
+          order: "h_order"
         font_color: ""
         bg_color: ""
         # 必要なら付け足す
       - index: 2
-        source: ""
-          sql: ""
-          data: ""
-          order: ""
+        source: 
+          sql: "header1.sql"
+          data: "h_txt"
+          order: "h_order"
         font_color: ""
         bg_color: ""
     bodies:
       - index: 1
         source:
-          sql: ""
+          sql: "body0.sql"
           group:
             row_header: 
               source: 
-                sql: ""
-                data: ""
-                order: ""
-              column_name: ""
+                sql: "header2.sql"
+                data: "h_txt"
+                order: "h_order"
+              column_name: "h2_txt"
             col_headers:
               - header_index: 1
-                column_name: ""
+                column_name: "h0_txt"
               - header_index: 2
-                column_name: ""
-          data: ""
+                column_name: "h1_txt"
+          data: "t_value"
         font_color: ""
         bg_color: ""
         header_font_color: ""
@@ -49,20 +49,207 @@ sheets:
         # 必要なら付け足す
       - index: 2
         source:
-          sql: ""
+          sql: "body1.sql"
           group:
-            row_header: ""
+            row_header: 
+              source: 
+                sql: "header3.sql"
+                data: "h_txt"
+                order: "h_order"
+              column_name: "h2_txt"
             col_headers:
               - header_index: 1
-                header: ""
+                column_name: "h0_txt"
               - header_index: 2
-                header: ""
-          data: ""
-          order: ""
+                column_name: "h1_txt"
+          data: "t_value"
+        font_color: ""
+        bg_color: ""
+        header_font_color: ""
+        header_bg_color: ""
+      - index: 3
+        source:
+          sql: "body2.sql"
+          group:
+            row_header: 
+              source: 
+                sql: "header4.sql"
+                data: "h_txt"
+                order: "h_order"
+              column_name: "h2_txt"
+            col_headers:
+              - header_index: 1
+                column_name: "h0_txt"
+              - header_index: 2
+                column_name: "h1_txt"
+          data: "t_value"
+        font_color: ""
+        bg_color: ""
+        header_font_color: ""
+        header_bg_color: ""
+  - index: 1
+    name: "テストシート2"
+    row_padding: 5
+    col_padding: 0
+    row_header_span: 1
+    col_headers:
+      - index: 1
+        source:
+          sql: "header0.sql"
+          data: "h_txt"
+          order: "h_order"
+        font_color: ""
+        bg_color: ""
+        # 必要なら付け足す
+      - index: 2
+        source: 
+          sql: "header1.sql"
+          data: "h_txt"
+          order: "h_order"
+        font_color: ""
+        bg_color: ""
+    bodies:
+      - index: 1
+        source:
+          sql: "body0.sql"
+          group:
+            row_header: 
+              source: 
+                sql: "header2.sql"
+                data: "h_txt"
+                order: "h_order"
+              column_name: "h2_txt"
+            col_headers:
+              - header_index: 1
+                column_name: "h0_txt"
+              - header_index: 2
+                column_name: "h1_txt"
+          data: "t_value"
         font_color: ""
         bg_color: ""
         header_font_color: ""
         header_bg_color: ""
         # 必要なら付け足す
-
-
+      - index: 2
+        source:
+          sql: "body1.sql"
+          group:
+            row_header: 
+              source: 
+                sql: "header3.sql"
+                data: "h_txt"
+                order: "h_order"
+              column_name: "h2_txt"
+            col_headers:
+              - header_index: 1
+                column_name: "h0_txt"
+              - header_index: 2
+                column_name: "h1_txt"
+          data: "t_value"
+        font_color: ""
+        bg_color: ""
+        header_font_color: ""
+        header_bg_color: ""
+      - index: 3
+        source:
+          sql: "body2.sql"
+          group:
+            row_header: 
+              source: 
+                sql: "header4.sql"
+                data: "h_txt"
+                order: "h_order"
+              column_name: "h2_txt"
+            col_headers:
+              - header_index: 1
+                column_name: "h0_txt"
+              - header_index: 2
+                column_name: "h1_txt"
+          data: "t_value"
+        font_color: ""
+        bg_color: ""
+        header_font_color: ""
+        header_bg_color: ""
+  - index: 2
+    name: "テストシート2"
+    row_padding: 5
+    col_padding: 0
+    row_header_span: 2
+    col_headers:
+      - index: 1
+        source:
+          sql: "header0.sql"
+          data: "h_txt"
+          order: "h_order"
+        font_color: ""
+        bg_color: ""
+        # 必要なら付け足す
+      - index: 2
+        source: 
+          sql: "header1.sql"
+          data: "h_txt"
+          order: "h_order"
+        font_color: ""
+        bg_color: ""
+    bodies:
+      - index: 1
+        source:
+          sql: "body0.sql"
+          group:
+            row_header: 
+              source: 
+                sql: "header2.sql"
+                data: "h_txt"
+                order: "h_order"
+              column_name: "h2_txt"
+            col_headers:
+              - header_index: 1
+                column_name: "h0_txt"
+              - header_index: 2
+                column_name: "h1_txt"
+          data: "t_value"
+        font_color: ""
+        bg_color: ""
+        header_font_color: ""
+        header_bg_color: ""
+        # 必要なら付け足す
+      - index: 2
+        source:
+          sql: "body1.sql"
+          group:
+            row_header: 
+              source: 
+                sql: "header3.sql"
+                data: "h_txt"
+                order: "h_order"
+              column_name: "h2_txt"
+            col_headers:
+              - header_index: 1
+                column_name: "h0_txt"
+              - header_index: 2
+                column_name: "h1_txt"
+          data: "t_value"
+        font_color: ""
+        bg_color: ""
+        header_font_color: ""
+        header_bg_color: ""
+      - index: 3
+        source:
+          sql: "body2.sql"
+          group:
+            row_header: 
+              source: 
+                sql: "header4.sql"
+                data: "h_txt"
+                order: "h_order"
+              column_name: "h2_txt"
+            col_headers:
+              - header_index: 1
+                column_name: "h0_txt"
+              - header_index: 2
+                column_name: "h1_txt"
+          data: "t_value"
+        font_color: ""
+        bg_color: ""
+        header_font_color: ""
+        header_bg_color: ""
