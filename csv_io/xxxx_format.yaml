@@ -11,6 +11,9 @@ sheets:
     row_header_span: 1
     col_headers:
       - index: 1
+        # 1つ目の{}: yyyy, 2つ目の{}: mm を代入
+        header_title:
+          text: "{yyyy}年{mm}月度"
         source:
           sql: "header0.sql"
           data: "h_txt"
@@ -19,6 +22,8 @@ sheets:
         bg_color: ""
         # 必要なら付け足す
       - index: 2
+        header_title:
+          text: "商材"
         source: 
           sql: "header1.sql"
           data: "h_txt"
@@ -94,6 +99,9 @@ sheets:
     row_header_span: 1
     col_headers:
       - index: 1
+        # 1つ目の{}: yyyy, 2つ目の{}: mm を代入
+        header_title:
+          text: "{yyyy}年{mm}月度"
         source:
           sql: "header0.sql"
           data: "h_txt"
@@ -102,6 +110,9 @@ sheets:
         bg_color: ""
         # 必要なら付け足す
       - index: 2
+        # 1つ目の{}: yyyy, 2つ目の{}: mm を代入
+        header_title:
+          text: "商材"
         source: 
           sql: "header1.sql"
           data: "h_txt"
@@ -177,6 +188,9 @@ sheets:
     row_header_span: 2
     col_headers:
       - index: 1
+        # 1つ目の{}: yyyy, 2つ目の{}: mm を代入
+        header_title:
+          text: "{yyyy}年{mm}月度"
         source:
           sql: "header0.sql"
           data: "h_txt"
@@ -185,6 +199,9 @@ sheets:
         bg_color: ""
         # 必要なら付け足す
       - index: 2
+        # 1つ目の{}: yyyy, 2つ目の{}: mm を代入
+        header_title:
+          text: "商材"
         source: 
           sql: "header1.sql"
           data: "h_txt"

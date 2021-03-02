@@ -33,6 +33,18 @@ def calc_header_span(p_index, p_col_headers):
         return 1
     return p_col_headers[p_index+1]["size"] * calc_header_span(p_index+1, p_col_headers)
 
+# ヘッダ描画用関数 必要なら引数にスタイル追加
+def draw_headers(p_row_i, p_start_col_i, p_header_i, p_col_headers):
+    l_col_i = p_start_col_i
+    # col_header_confs[p_header_i]["row_style"]
+    for h_txt in col_headers[p_header_i]["indexes"].keys():
+        ws.cell(p_row_i, l_col_i, value=h_txt)
+        # col_header_confs[p_header_i]["cell_style"]
+        if p_header_i < len(p_col_headers) - 1:
+            draw_headers(p_row_i + 1, l_col_i, p_header_i + 1, p_col_headers)
+        l_col_i += col_headers[p_header_i]["span"]
+        # col_header_confs[p_header_i]["last_col_style"] # colnum: l_col_i -1, right side
+
 # ---- 出力ファイル作成処理 ----
 # フォーマット確認(TODO: csv増える予定)
 if format_config.get("format") not in ["xlsx"]:
@@ -58,6 +70,7 @@ for sheet in format_config["sheets"]:
 
     row_i = sheet["row_padding"] + 1
     col_i = sheet["col_padding"] + 1
+    row_header_span = sheet["row_header_span"] 
 
     # query column headers
     col_headers = []
@@ -76,18 +89,18 @@ for sheet in format_config["sheets"]:
     for i in range(len(col_headers)):
         col_headers[i]["span"] = calc_header_span(i, col_headers)
 
+    # draw title
+    for i, col_header_conf in enumerate(col_header_confs):
+        l_text = col_header_conf["header_title"]["text"]
+        try:
+            l_text = l_text.format(yyyy=p_yyyymm[:4], mm=p_yyyymm[4:6])
+        except IndexError:
+            pass
+        ws.cell(row_i + i, col_i, value=l_text)
+
     # draw column headers
-    for i in range(len(col_headers)):
-        l_span = col_headers[i+1]["size"] if i+1 < len(col_headers) else 1
-        l_col_i = col_i
-        for h_txt in col_headers[i]["indexes"].keys():
-            # ↑のkeys() 3.6以降は順序が保存されるらしいのでそれ前提
-            ws.cell(row_i, l_col_i, value=h_txt)
-            l_col_i += l_span
-            # col_header_confs["cell_style"]
-        # col_header_confs["row_style"]
-        # col_header_confs["last_col_style"] # colnum: l_col_i -1, right side
-        row_i += 1
+    draw_headers(row_i, col_i + row_header_span, 0, col_headers)
+    row_i += len(col_headers)
 
     # query bodies
     bodies = []
@@ -117,10 +130,9 @@ for sheet in format_config["sheets"]:
     # draw bodies
     for body in bodies:
         l_start_row = row_i
-        row_header_span = sheet["row_header_span"]
         for l_row in body["table"]:
             l_row_i = row_i + int(body["rh_indexes"][l_row[body["rh_column_name"]]])
-            l_column_i = row_header_span + 1
+            l_column_i = col_i + row_header_span
             for i in range(len(col_headers)):
                 l_h_idx = int(col_headers[i]["indexes"][l_row[body["ch_column_names"][i]]])
                 l_column_i += l_h_idx * col_headers[i]["span"]
@@ -128,16 +140,16 @@ for sheet in format_config["sheets"]:
             # ds_conf["cell_style"]
         # draw row headers
         for h_txt in body["rh_indexes"].keys():
-            ws.cell(row_i, row_header_span, value=h_txt)
+            ws.cell(row_i, col_i, value=h_txt)
             # ds_conf["header_style"]
             # ds_conf["row_style"]
             row_i += 1
         # fill by 0
         # if ds_conf["fills_by_zero"]
-        for i in range(l_start_row, row_i - 1):
+        for i in range(l_start_row, row_i):
             for j in range(col_headers[0]["size"] * col_headers[0]["span"]):
-                if ws.cell(i, row_header_span + j).value is None:
-                    ws.cell(i, row_header_span + j).value = 0
+                if ws.cell(i, col_i + row_header_span + j).value is None:
+                    ws.cell(i, col_i + row_header_span + j).value = 0
 
 wb.save(p_output_file_path)
 #Completed.
