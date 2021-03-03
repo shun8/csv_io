@@ -1,0 +1,6 @@
+postgres:
+  dbname: "testdb"
+  host: "192.168.33.11"
+  port: 5432
+  user: "testuser"
+  password: "P@ssw0rd"
