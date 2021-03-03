@@ -84,12 +84,6 @@ def calc_col_header_row_span(p_col_header_confs):
             l_count += l_row_span - 1
     return l_count
 
-        #last_col_line = p_col_header_confs[p_header_i].get("last_col_line")
-        # if last_col_line is not None:
-            # for cell in ws.columns[l_col_i-1]:
-                # cell.border = Border(right=Side(border_style="thick", color="000000"))
-        # col_header_confs[p_header_i]["last_col_style"] # colnum: l_col_i -1, right side
-
 def apply_styles(ws, p_row_i, p_col_i, p_style):
     if p_style is None:
         return
@@ -109,8 +103,11 @@ def apply_styles(ws, p_row_i, p_col_i, p_style):
                 horizontal=p_style["alignment"]["holizontal"],
                 vertical=p_style["alignment"]["vertical"])
     if p_style.get("border"):
-        # 空で作成するとmerge時にエラー(merge.py内でside.styleで参照してる(たぶんバグ))
-        l_border = Border(top=Side(), bottom=Side(), left=Side(), right=Side())
+        l_border = Border(
+                    right=ws.cell(p_row_i, p_col_i).border.right,
+                    left=ws.cell(p_row_i, p_col_i).border.left,
+                    top=ws.cell(p_row_i, p_col_i).border.top,
+                    bottom=ws.cell(p_row_i, p_col_i).border.bottom)
         for side_i in ["top", "bottom", "left", "right"]:
             if p_style["border"].get(side_i):
                 setattr(l_border, side_i, Side(
@@ -248,7 +245,20 @@ for sheet in format_config["sheets"]:
                     border_style=body_conf["last_row_border"]["border_style"],
                     color=body_conf["last_row_border"]["color"]))
 
-    # last column border
+    # column border by top header
+    top_header_conf = col_header_confs[0]
+    last_col_line = top_header_conf.get("last_col_border")
+    if last_col_line is not None:
+        for i in range(1, ws.max_row + 1):
+            for j in range(len(col_headers[0]["indexes"])):
+                l_j = row_header_span + (j + 1) * col_headers[0]["size"]
+                ws.cell(i, l_j).border = Border(
+                    right=Side(
+                        border_style=top_header_conf["last_col_border"]["border_style"],
+                        color=top_header_conf["last_col_border"]["color"]),
+                    left=ws.cell(i, l_j).border.left,
+                    top=ws.cell(i, l_j).border.top,
+                    bottom=ws.cell(i, l_j).border.bottom)
 
 wb.save(p_output_file_path)
 #Completed.
