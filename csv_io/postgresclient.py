@@ -21,7 +21,7 @@ class PostgresClient:
         )
         # dict形式で結果を取得: https://qiita.com/itoufo/items/7306122497fd4f712bff
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        cur.execute (sql)
+        cur.execute(sql)
         results = cur.fetchall()
 
         dict_result = []

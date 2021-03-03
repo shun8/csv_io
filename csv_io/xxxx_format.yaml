@@ -161,6 +161,15 @@ sheets:
             top:
               border_style: "dashDotDot"
               color: "00FF00"
+            bottom:
+              border_style: "dashDotDot"
+              color: "00FF00"
+            left:
+              border_style: "dashDotDot"
+              color: "00FF00"
+            right:
+              border_style: "dashDotDot"
+              color: "00FF00"
       - index: 3
         source:
           sql: "body2.sql"
@@ -183,7 +192,7 @@ sheets:
     col_padding: 0
     row_header_span: 1
     col_headers:
-      - index: 1
+      - index: 2
         # 1つ目の{}: yyyy, 2つ目の{}: mm を代入
         header_title:
           text: "{yyyy}年{mm}月度"
@@ -217,7 +226,7 @@ sheets:
             vertical: "center"
         merge: True
         # 必要なら付け足す
-      - index: 2
+      - index: 1
         header_title:
           text: "商材"
           style:
@@ -249,7 +258,7 @@ sheets:
             holizontal: "center"
             vertical: "center"
     bodies:
-      - index: 1
+      - index: 3
         source:
           sql: "body0.sql"
           group:
@@ -260,9 +269,9 @@ sheets:
                 order: "h_order"
               column_name: "h2_txt"
             col_headers:
-              - header_index: 1
-                column_name: "h0_txt"
               - header_index: 2
+                column_name: "h0_txt"
+              - header_index: 1
                 column_name: "h1_txt"
           data: "t_value"
         font_color: ""
@@ -270,7 +279,7 @@ sheets:
         header_font_color: ""
         header_bg_color: ""
         # 必要なら付け足す
-      - index: 2
+      - index: 1
         source:
           sql: "body1.sql"
           group:
@@ -281,16 +290,16 @@ sheets:
                 order: "h_order"
               column_name: "h2_txt"
             col_headers:
-              - header_index: 1
-                column_name: "h0_txt"
               - header_index: 2
+                column_name: "h0_txt"
+              - header_index: 1
                 column_name: "h1_txt"
           data: "t_value"
         font_color: ""
         bg_color: ""
         header_font_color: ""
         header_bg_color: ""
-      - index: 3
+      - index: 2
         source:
           sql: "body2.sql"
           group:
@@ -301,9 +310,9 @@ sheets:
                 order: "h_order"
               column_name: "h2_txt"
             col_headers:
-              - header_index: 1
-                column_name: "h0_txt"
               - header_index: 2
+                column_name: "h0_txt"
+              - header_index: 1
                 column_name: "h1_txt"
           data: "t_value"
         font_color: ""
