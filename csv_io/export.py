@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import openpyxl
+from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
 import sys
 import yaml
 
@@ -27,6 +28,18 @@ with open(os.path.normpath(os.path.join(l_dirname, "../db_connection.yaml")), "r
 # SQLファイル配置場所
 sql_dir = os.path.normpath(os.path.join(l_dirname, "../sql"))
 
+# 数字からエクセル列アルファベットへの変換関数（1→A、27→AAみたいな変換）
+# https://www.engineer-log.com/entry/2018/03/15/openpyxl-frame-border
+def to_alpha(num):
+    h=int((num-1-26)/(26*26))
+    i=int((num-1-(h*26*26))/26)
+    j=int(num-(i*26)-(h*26*26))
+    alpha=''
+    for k in h,i,j:
+        if k!=0:
+            alpha+=chr(k+64)
+    return alpha
+
 # アドレス計算用関数
 def calc_header_span(p_index, p_col_headers):
     if p_index >= len(p_col_headers) - 1:
@@ -34,22 +47,85 @@ def calc_header_span(p_index, p_col_headers):
     return p_col_headers[p_index+1]["size"] * calc_header_span(p_index+1, p_col_headers)
 
 # ヘッダ描画用関数 必要なら引数にスタイル追加
-def draw_headers(p_row_i, p_start_col_i, p_header_i, p_col_headers):
+def draw_headers(ws, p_row_i, p_start_col_i, p_header_i, p_col_headers, p_col_header_confs):
+    l_row_span = p_col_header_confs[p_header_i].get("row_span")
+    l_row_offset = p_col_header_confs[p_header_i].get("row_offset")
+    if l_row_span is None:
+        l_row_span = 1
+    if l_row_offset is None:
+        l_row_offset = 0
+
     l_col_i = p_start_col_i
-    # col_header_confs[p_header_i]["row_style"]
     for h_txt in col_headers[p_header_i]["indexes"].keys():
-        ws.cell(p_row_i, l_col_i, value=h_txt)
-        # col_header_confs[p_header_i]["cell_style"]
+        # value
+        ws.cell(p_row_i + l_row_offset , l_col_i, value=h_txt)
+        # styles
+        for i in range(p_row_i, p_row_i + l_row_span):
+            apply_styles(ws, i, l_col_i, p_col_header_confs[p_header_i]["style"])
+
+        # child headers
         if p_header_i < len(p_col_headers) - 1:
-            draw_headers(p_row_i + 1, l_col_i, p_header_i + 1, p_col_headers)
-        l_col_i += col_headers[p_header_i]["span"]
+            draw_headers(ws, p_row_i + l_row_span, l_col_i,
+                    p_header_i + 1, p_col_headers, p_col_header_confs)
+
+        l_col_span = col_headers[p_header_i]["span"]
+        l_col_i += l_col_span
+        # merge
+        if p_col_header_confs[p_header_i].get("merge"):
+            ws.merge_cells(
+                    start_row=p_row_i, start_column=l_col_i - l_col_span,
+                    end_row=p_row_i, end_column=l_col_i - 1)
+
+def calc_col_header_row_span(p_col_header_confs):
+    l_count = len(p_col_header_confs)
+    for conf_i in p_col_header_confs:
+        l_row_span = conf_i.get("row_span")
+        if l_row_span:
+            l_count += l_row_span - 1
+    return l_count
+
+        #last_col_line = p_col_header_confs[p_header_i].get("last_col_line")
+        # if last_col_line is not None:
+            # for cell in ws.columns[l_col_i-1]:
+                # cell.border = Border(right=Side(border_style="thick", color="000000"))
         # col_header_confs[p_header_i]["last_col_style"] # colnum: l_col_i -1, right side
 
+def apply_styles(ws, p_row_i, p_col_i, p_style):
+    if p_style is None:
+        return
+
+    if p_style.get("width"):
+        ws.column_dimensions[to_alpha(p_col_i)].width = p_style.get("width")
+    if p_style.get("font"):
+        ws.cell(p_row_i, p_col_i).font = Font(
+                name=p_style["font"]["name"], size=p_style["font"]["size"],
+                bold=p_style["font"]["bold"], color=p_style["font"]["color"])
+    if p_style.get("fill"):
+        ws.cell(p_row_i, p_col_i).fill = PatternFill(
+                patternType=p_style["fill"]["pattern_type"],
+                fgColor=p_style["fill"]["fg_color"])
+    if p_style.get("alignment"):
+        ws.cell(p_row_i, p_col_i).alignment = Alignment(
+                horizontal=p_style["alignment"]["holizontal"],
+                vertical=p_style["alignment"]["vertical"])
+    if p_style.get("border"):
+        # 空で作成するとmerge時にエラー(merge.py内でside.styleで参照してる(たぶんバグ))
+        l_border = Border(top=Side(), bottom=Side(), left=Side(), right=Side())
+        for side_i in ["top", "bottom", "left", "right"]:
+            if p_style["border"].get(side_i):
+                setattr(l_border, side_i, Side(
+                        border_style=p_style["border"][side_i]["border_style"],
+                        color=p_style["border"][side_i]["color"]))
+        ws.cell(p_row_i, p_col_i).border = l_border
+
 # ---- 出力ファイル作成処理 ----
-# フォーマット確認(TODO: csv増える予定)
+# フォーマット確認(今はxlsxしかないので実質意味なし)
 if format_config.get("format") not in ["xlsx"]:
     print(format_config.get("format") + " is not valid format.")
     sys.exit(1)
+
+# デフォルトスタイル取得
+default_style = format_config.get("style")
 
 # -- xlsx出力処理 --
 # ベースになるファイル読み込み
@@ -90,17 +166,28 @@ for sheet in format_config["sheets"]:
         col_headers[i]["span"] = calc_header_span(i, col_headers)
 
     # draw title
-    for i, col_header_conf in enumerate(col_header_confs):
+    for h_i, col_header_conf in enumerate(col_header_confs):
         l_text = col_header_conf["header_title"]["text"]
         try:
             l_text = l_text.format(yyyy=p_yyyymm[:4], mm=p_yyyymm[4:6])
         except IndexError:
             pass
-        ws.cell(row_i + i, col_i, value=l_text)
+        ws.cell(row_i + h_i, col_i, value=l_text)
+        apply_styles(ws, row_i + h_i, col_i, col_header_conf["header_title"]["style"])
+
+        # merge
+        l_row_span = col_header_conf.get("row_span")
+        if col_header_conf["header_title"].get("merge") and l_row_span:
+            ws.merge_cells(
+                    start_row=row_i + h_i, start_column=col_i,
+                    end_row=row_i + h_i + l_row_span - 1, end_column=col_i)
 
     # draw column headers
-    draw_headers(row_i, col_i + row_header_span, 0, col_headers)
-    row_i += len(col_headers)
+    draw_headers(ws, row_i, col_i + row_header_span, 0, col_headers, col_header_confs)
+    row_i += calc_col_header_row_span(col_header_confs)
+
+    if sheet.get("freeze_panes"):
+        ws.freeze_panes = to_alpha(row_header_span+1) + str(row_i)
 
     # query bodies
     bodies = []
@@ -128,28 +215,40 @@ for sheet in format_config["sheets"]:
         bodies.append(l_body)
 
     # draw bodies
-    for body in bodies:
+    for body, body_conf in zip(bodies, body_confs):
         l_start_row = row_i
         for l_row in body["table"]:
             l_row_i = row_i + int(body["rh_indexes"][l_row[body["rh_column_name"]]])
-            l_column_i = col_i + row_header_span
+            l_col_i = col_i + row_header_span
             for i in range(len(col_headers)):
                 l_h_idx = int(col_headers[i]["indexes"][l_row[body["ch_column_names"][i]]])
-                l_column_i += l_h_idx * col_headers[i]["span"]
-            ws.cell(l_row_i, l_column_i, value=l_row[ds_conf["data"]])
+                l_col_i += l_h_idx * col_headers[i]["span"]
+            ws.cell(l_row_i, l_col_i, value=l_row[ds_conf["data"]])
+            apply_styles(ws, l_row_i, l_col_i, default_style)
+            ws.cell(l_row_i, l_col_i).number_format = default_style["number_format"]
             # ds_conf["cell_style"]
         # draw row headers
         for h_txt in body["rh_indexes"].keys():
             ws.cell(row_i, col_i, value=h_txt)
-            # ds_conf["header_style"]
-            # ds_conf["row_style"]
+            l_style = body_conf["row_header_style"] if body_conf.get("row_header_style") else default_style
+            apply_styles(ws, row_i, col_i, l_style)
             row_i += 1
+
         # fill by 0
-        # if ds_conf["fills_by_zero"]
         for i in range(l_start_row, row_i):
             for j in range(col_headers[0]["size"] * col_headers[0]["span"]):
                 if ws.cell(i, col_i + row_header_span + j).value is None:
                     ws.cell(i, col_i + row_header_span + j).value = 0
+                    apply_styles(ws, i, col_i + row_header_span + j, default_style)
+        
+        # last row border
+        if body_conf.get("last_row_border"):
+            for i in range(col_i + row_header_span, ws.max_column + 1):
+                ws.cell(row_i - 1, i).border = Border(bottom=Side(
+                    border_style=body_conf["last_row_border"]["border_style"],
+                    color=body_conf["last_row_border"]["color"]))
+
+    # last column border
 
 wb.save(p_output_file_path)
 #Completed.
