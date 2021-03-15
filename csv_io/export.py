@@ -17,6 +17,9 @@ p_format_file = sys.argv[1]
 p_output_file_path = sys.argv[2]
 p_yyyymm = sys.argv[3]
 
+# NULL行名
+null_col_name = "VALUE_IS_NULL"
+
 # sqlファイルに変数を渡す際の変数名の表記ゆれに対応 (変数名なしの%s指定には未対応)
 yyyymm_val_names = ["ym", "yyyymm"]
 yyyymm_val_dict = {x: p_yyyymm for x in yyyymm_val_names}
@@ -205,6 +208,7 @@ for sheet in format_config["sheets"]:
         l_rh_table = db_client.execute(l_sql, yyyymm_val_dict)
         l_rh_table = sorted(l_rh_table, key=lambda x: x[rh_ds_conf["order"]])
         l_rh_indexes = {x[rh_ds_conf["data"]]: x[rh_ds_conf["order"]] for x in l_rh_table}
+        l_rh_indexes[null_col_name] = len(l_rh_table)
 
         with open(os.path.normpath(os.path.join(sql_dir, ds_conf["sql"])), "r") as l_sqlfile:
             l_sql = l_sqlfile.read()
@@ -222,9 +226,12 @@ for sheet in format_config["sheets"]:
 
     # draw bodies
     for body, body_conf in zip(bodies, body_confs):
+        is_null_error = False
         l_start_row = row_i
         for l_row in body["table"]:
             l_row_i = row_i + int(body["rh_indexes"][l_row[body["rh_column_name"]]])
+            if [l_row[body["rh_column_name"]]] == null_col_name:
+                is_null_error = True
             l_col_i = col_i + row_header_span
             for i in range(len(col_headers)):
                 l_h_idx = int(col_headers[i]["indexes"][l_row[body["ch_column_names"][i]]])
@@ -234,6 +241,8 @@ for sheet in format_config["sheets"]:
             ws.cell(l_row_i, l_col_i).number_format = default_style["number_format"]
             # ds_conf["cell_style"]
         # draw row headers
+        if not is_null_error:
+            body["rh_indexes"].pop(null_col_name)
         for h_txt in body["rh_indexes"].keys():
             ws.cell(row_i, col_i, value=h_txt)
             l_style = body_conf["row_header_style"] if body_conf.get("row_header_style") else default_style
@@ -260,7 +269,7 @@ for sheet in format_config["sheets"]:
     if last_col_line is not None:
         for i in range(1, ws.max_row + 1):
             for j in range(len(col_headers[0]["indexes"])):
-                l_j = row_header_span + (j + 1) * col_headers[0]["size"]
+                l_j = row_header_span + (j + 1) * col_headers[0]["span"]
                 ws.cell(i, l_j).border = Border(
                     right=Side(
                         border_style=top_header_conf["last_col_border"]["border_style"],
