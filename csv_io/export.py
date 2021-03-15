@@ -10,7 +10,7 @@ import postgresclient
 
 # 引数判定
 if len(sys.argv) != 4:
-    print("Usage: python " & os.path.basename(__file__) & " <format_file> <output_file_path> <yyyymm>")
+    print("Usage: python " + os.path.basename(__file__) + " <format_file> <output_file_path> <yyyymm>")
     sys.exit(1)
 
 p_format_file = sys.argv[1]
