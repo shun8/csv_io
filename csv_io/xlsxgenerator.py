@@ -83,7 +83,7 @@ class XLSXGenerator:
             default_style = format_config.get("style")
             self._draw_bodies(ws, bodies, row_body_offset, col_body_offset, default_style)
             # fill by 0
-            self._fill_none_by_zero(ws, row_body_offset, col_body_offset, default_style)
+            self._fill_none_by_zero(ws, row_body_offset, col_body_offset)
             # freeze panes
             if sheet_conf.get("freeze_panes"):
                 ws.freeze_panes = self._to_alpha(col_body_offset + 1) + str(row_body_offset + 1)
@@ -217,6 +217,7 @@ class XLSXGenerator:
     def _draw_bodies(ws, bodies, row_offset, col_offset, default_style=None):
         l_row_offset = row_offset
         for body in bodies:
+            start_row = l_row_offset + 1
             for item in body.items:
                 row_i = l_row_offset + item.row_index
                 col_i = col_offset + item.col_index
@@ -224,19 +225,20 @@ class XLSXGenerator:
                     ws.cell(row_i, col_i, value=int(item.value))
                 except ValueError:
                     ws.cell(row_i, col_i, value=item.value)
-                style_conf = body.style_conf if body.style_conf else default_style
-                XLSXGenerator._apply_cell_styles(ws, row_i, col_i, style_conf)
             l_row_offset += body.row_header.count
             if body.has_null_error:
                 l_row_offset += 1            
+            style_conf = body.style_conf if body.style_conf else default_style
+            for i in range(start_row, l_row_offset + 1):
+                for j in range(col_offset, ws.max_column + 1):
+                    XLSXGenerator._apply_cell_styles(ws, i, j, style_conf)
 
     @staticmethod
-    def _fill_none_by_zero(ws, row_offset, col_offset, style_conf=None):
+    def _fill_none_by_zero(ws, row_offset, col_offset):
         for i in range(row_offset + 1, ws.max_row + 1):
             for j in range(col_offset + 1, ws.max_column + 1):
                 if ws.cell(i, j).value is None:
                     ws.cell(i, j).value = 0
-                    XLSXGenerator._apply_cell_styles(ws, i, j, style_conf)
 
     @staticmethod
     def _apply_last_row_borders(ws, bodies, row_offset, col_offset):
