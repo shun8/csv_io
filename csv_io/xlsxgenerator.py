@@ -46,6 +46,7 @@ class XLSXGenerator:
         # SQLファイル配置場所
         self._sql_dir = sql_dir
 
+    @logging
     def gen_xlsx(self, format_file, yyyymm):
         # read format config
         with open(format_file, "r", encoding="utf-8") as l_file:
@@ -91,6 +92,14 @@ class XLSXGenerator:
             self._apply_last_row_borders(ws, bodies, row_body_offset, col_offset)
             # last column border by top header span
             self._apply_last_column_borders(ws, col_headers[0], col_body_offset)
+
+        # delete default worksheet
+        if basefile is None:
+            sheet_names = [x["name"] for x in format_config["sheets"]]
+            unused_sheets = list(set(wb.get_sheet_names()) - set(sheet_names))
+            for sheet_name in unused_sheets:
+                ws = wb.get_sheet_by_name(sheet_name)
+                wb.remove_sheet(ws)
 
         return wb
 
