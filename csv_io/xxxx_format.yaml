@@ -189,11 +189,6 @@ sheets:
                 column_name: "h1_txt"
           data: "t_value"
         style:
-          font:
-            name: "游ゴシック"
-            size: 9
-            bold: False
-            color: "000000"
           fill:
             patternType: "solid"
             fgColor: "FFFF00"
@@ -210,7 +205,6 @@ sheets:
             right:
               border_style: "dashDotDot"
               color: "00FF00"
-          number_format: "#,##0;[Red]-#,##0"
   - index: 1
     name: "Sampleシート2"
     row_padding: 5

@@ -228,10 +228,10 @@ class XLSXGenerator:
             l_row_offset += body.row_header.count
             if body.has_null_error:
                 l_row_offset += 1            
-            style_conf = body.style_conf if body.style_conf else default_style
             for i in range(start_row, l_row_offset + 1):
                 for j in range(col_offset, ws.max_column + 1):
-                    XLSXGenerator._apply_cell_styles(ws, i, j, style_conf)
+                    XLSXGenerator._apply_cell_styles(ws, i, j, default_style)
+                    XLSXGenerator._apply_cell_styles(ws, i, j, body.style_conf)
 
     @staticmethod
     def _fill_none_by_zero(ws, row_offset, col_offset):
