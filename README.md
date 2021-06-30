@@ -80,3 +80,47 @@ TODO: 必要になったら追記する
 ## DBアクセス
 `psycopg2`: PostgreSQLドライバ
 
+
+## ローカル開発環境(WSL2)
+ストアから取れるUbuntu使う。
+
+### インストール
+公式ドキュメントそのまま。Ubuntu入れた。Windowsターミナルも便利そうだから入れた
+https://docs.microsoft.com/ja-jp/windows/wsl/install-win10
+
+VSCodeの拡張機能もつよい(仮想マシンからVSCodeひらける)
+https://qiita.com/EBIHARA_kenji/items/12c7a452429d79006450
+
+#### 機能の有効化関連
+手順の中で↓2つを有効化してる
+* Linux用Windowsサブシステム
+* 仮想マシンプラットフォーム
+これはコントロールパネル->プログラムと機能->Windowsの機能の有効化または無効化でも設定可能
+(他の仮想化プラットフォームと競合したりしたら)
+
+### 環境コピー
+インストール直後の環境をコピーする
+https://qiita.com/souyakuchan/items/9f95043cf9c4eda2e1cc
+
+```
+> wsl --export Ubuntu Ubuntu-20.04_copy.tar
+> wsl --import Ubuntu_app .\wsl_manual_install\ubuntu2004\app\ Ubuntu-20.04_copy.tar
+> wsl --import Ubuntu_postgres .\wsl_manual_install\ubuntu2004\postgres\ Ubuntu-20.04_copy.tar
+> wsl --import Ubuntu_sqlserver .\wsl_manual_install\ubuntu2004\sqlserver\ Ubuntu-20.04_copy.tar
+```
+
+`.\wsl_manual_install\ubuntu2004\..` はインストール先のパス(環境ごとにフォルダ分けないといけないっぽい)
+
+### 接続
+Windows Terminalのプロファイルに自動で追加されるので接続は簡単(デフォルトの設定でそうなってるはず)
+https://docs.microsoft.com/ja-jp/windows/wsl/install-win10#install-windows-terminal-optional
+
+Windows Terminal使わないなら `wsl -d <環境名>` で接続
+カレントディレクトリはWindowsそのまま(`/mnt/c/..`以下にCドライブみたいな感じでマウントされる)
+ユーザは`root`で入るので`su - <ユーザ名>`等で適宜ユーザ切り替え
+
+### 環境削除
+
+```
+> wsl --unregister <環境名>
+```
