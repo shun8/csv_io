@@ -1,0 +1,95 @@
+format: "xlsx"
+# 絶対パスで記述
+#basefile: ""
+style:
+  # defaultのデータセルのスタイル
+  font:
+    name: "游ゴシック"
+    size: 9
+    bold: False
+    color: "000000"
+  number_format: "#,##0;[Red]-#,##0"
+sheets:
+  # Sheetのindexのみ0始まり(sheetの並び変えが必要になったら実装)
+  - index: 0
+    name: "Sampleシート1"
+    row_padding: 2
+    col_padding: 0
+    source:
+      sql: "test.sql"
+    header: True
+    header_style:
+      fill:
+        patternType: "solid"
+        fgColor: "FFFF00"
+      border:
+        top:
+          border_style: "dashDotDot"
+          color: "00FF00"
+        bottom:
+          border_style: "dashDotDot"
+          color: "00FF00"
+        left:
+          border_style: "dashDotDot"
+          color: "00FF00"
+        right:
+          border_style: "dashDotDot"
+          color: "00FF00"
+    style:
+      fill:
+        patternType: "solid"
+        fgColor: "FFFF00"
+      border:
+        top:
+          border_style: "dashDotDot"
+          color: "00FF00"
+        bottom:
+          border_style: "dashDotDot"
+          color: "00FF00"
+        left:
+          border_style: "dashDotDot"
+          color: "00FF00"
+        right:
+          border_style: "dashDotDot"
+          color: "00FF00"
+  - index: 1
+    name: "Sampleシート2"
+    row_padding: 2
+    col_padding: 0
+    source:
+      sql: "test.sql"
+    header: True
+    header_style:
+      fill:
+        patternType: "solid"
+        fgColor: "FFFF00"
+      border:
+        top:
+          border_style: "dashDotDot"
+          color: "00FF00"
+        bottom:
+          border_style: "dashDotDot"
+          color: "00FF00"
+        left:
+          border_style: "dashDotDot"
+          color: "00FF00"
+        right:
+          border_style: "dashDotDot"
+          color: "00FF00"
+    style:
+      fill:
+        patternType: "solid"
+        fgColor: "FFFF00"
+      border:
+        top:
+          border_style: "dashDotDot"
+          color: "00FF00"
+        bottom:
+          border_style: "dashDotDot"
+          color: "00FF00"
+        left:
+          border_style: "dashDotDot"
+          color: "00FF00"
+        right:
+          border_style: "dashDotDot"
+          color: "00FF00"

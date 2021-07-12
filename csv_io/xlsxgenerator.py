@@ -103,19 +103,76 @@ class XLSXGenerator:
 
         return wb
 
+    @logging
+    def gen_xlsx_like_csv(self, format_file, sql_params={}):
+        # read format config
+        with open(format_file, "r", encoding="utf-8") as l_file:
+            format_config = yaml.safe_load(l_file)
+        # create workbook
+        basefile = format_config.get("basefile")
+        if basefile is not None and not os.path.isfile(basefile):
+            logger.error("File could not be opened " + basefile + ".")
+            sys.exit(1)
+        wb = self._create_workbook(basefile)
+
+        # create worksheets
+        for sheet_conf in format_config["sheets"]:
+            if sheet_conf["name"] not in wb.sheetnames:
+                wb.create_sheet(index=sheet_conf["index"], title=sheet_conf["name"])
+            ws = wb[sheet_conf["name"]]
+
+            result = self._query_by_params(sheet_conf["source"]["sql"], sql_params)
+            if not result: break
+
+            row_offset = sheet_conf["row_padding"]
+            col_offset = sheet_conf["col_padding"]
+            default_style = format_config.get("style")
+
+            # draw header
+            if sheet_conf["header"]:
+                if sheet_conf.get("header_style"):
+                    header_style = sheet_conf.get("header_style")
+                else:
+                    header_style = default_style
+                row_index = row_offset + 1
+                XLSXGenerator._draw_row(
+                        ws, result[0].keys(), row_index, col_offset, header_style)
+                row_offset = row_offset + 1
+
+            # draw body
+            if sheet_conf.get("style"):
+                body_style = sheet_conf.get("style")
+            else:
+                body_style = default_style
+            XLSXGenerator._draw_rows(ws, result, row_offset, col_offset, body_style)
+
+        # delete default worksheet
+        if basefile is None:
+            sheet_names = [x["name"] for x in format_config["sheets"]]
+            unused_sheets = list(set(wb.get_sheet_names()) - set(sheet_names))
+            for sheet_name in unused_sheets:
+                ws = wb.get_sheet_by_name(sheet_name)
+                wb.remove_sheet(ws)
+
+        return wb
+
     def _query_header(self, data_source_conf, yyyymm=None):
         table = self._query_by_yyyymm(data_source_conf["sql"], yyyymm)
         return sorted(table, key=lambda x: x[data_source_conf["order"]])
 
     def _query_by_yyyymm(self, sqlfile_name, yyyymm):
-        # sqlファイルに変数を渡す際の変数名の表記ゆれに対応 (変数名なしの%s指定には未対応)
+        # ym指定する際の変数名リスト
         yyyymm_var_names = ["ym", "yyyymm"]
         yyyymm_var_dict = {x: yyyymm for x in yyyymm_var_names}
+        return self._query_by_params(sqlfile_name, yyyymm_var_dict)
+
+    def _query_by_params(self, sqlfile_name, sql_params={}):
+        # sqlファイルに変数を渡す際の変数名の表記ゆれに対応 (変数名なしの%s指定には未対応)
         with open(os.path.normpath(os.path.join(self._sql_dir, sqlfile_name)), "r") as sqlfile:
             sql = sqlfile.read()
             # :始まりの変数をpsycopg2で入力できる形式に変換
             sql = re.sub(':([A-Za-z-_]+)', '%(\\1)s', sql)
-        return self._db_client.execute(sql, yyyymm_var_dict)
+        return self._db_client.execute(sql, sql_params)
 
     def _create_column_headers(self, headers_conf, yyyymm=None):
         col_headers = []
@@ -149,6 +206,21 @@ class XLSXGenerator:
             return openpyxl.Workbook()
         elif os.path.isfile(basefile):
             return openpyxl.load_workbook(basefile)
+
+    @staticmethod
+    def _draw_rows(ws, rows, row_offset, col_offset, style=None):
+        row_i = row_offset + 1
+        for row in rows:
+            XLSXGenerator._draw_row(ws, row.values(), row_i, col_offset, style)
+            row_i = row_i + 1
+
+    @staticmethod
+    def _draw_row(ws, values, row_index, col_offset, style=None):
+        col_i = col_offset + 1
+        for val in values:
+            ws.cell(row_index, col_i, value=val)
+            XLSXGenerator._apply_cell_styles(ws, row_index, col_i, style)
+            col_i = col_i + 1
 
     @staticmethod
     def _draw_column_headers(ws, col_headers, row_offset, col_offset):
