@@ -122,18 +122,23 @@ class XLSXGenerator:
             offset = 0         
             sheet_count = 1       
             while True:
-                if not sheet_count == 1:
-                    sheet_name = sheet_conf["name"] + "_" + str(sheet_count)
-                else:
+                if sheet_count == 1:
                     sheet_name = sheet_conf["name"]
+                else:
+                    sheet_name = sheet_conf["name"] + "_" + str(sheet_count)
 
                 if sheet_name not in wb.sheetnames:
-                    if not sheet_count == 1:
-                        ws = wb.copy_worksheet(wb[sheet_conf["name"]])
-                        ws.title = sheet_name
-                    else:
+                    if sheet_count == 1:
                         wb.create_sheet(index=sheet_conf["index"], title=sheet_name)
                         ws = wb[sheet_name]
+                    else:
+                        ws = wb.copy_worksheet(wb[sheet_conf["name"]])
+                        ws.title = sheet_name
+                        # clear values
+                        row_offset = sheet_conf["row_padding"]
+                        for row in ws.iter_rows(min_row=row_offset+1):
+                            for cell in row:
+                                cell.value = None
 
                 sql_params.update({"limit": limit, "offset": offset})
                 result = self._query_by_params(sheet_conf["source"]["sql"], sql_params)
