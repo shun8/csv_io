@@ -115,41 +115,62 @@ class XLSXGenerator:
             sys.exit(1)
         wb = self._create_workbook(basefile)
 
+        additional_sheet_names = []
         # create worksheets
         for sheet_conf in format_config["sheets"]:
-            if sheet_conf["name"] not in wb.sheetnames:
-                wb.create_sheet(index=sheet_conf["index"], title=sheet_conf["name"])
-            ws = wb[sheet_conf["name"]]
-
-            result = self._query_by_params(sheet_conf["source"]["sql"], sql_params)
-            if not result: break
-
-            row_offset = sheet_conf["row_padding"]
-            col_offset = sheet_conf["col_padding"]
-            default_style = format_config.get("style")
-
-            # draw header
-            if sheet_conf["header"]:
-                if sheet_conf.get("header_style"):
-                    header_style = sheet_conf.get("header_style")
+            limit = sheet_conf.get("limit")
+            offset = 0         
+            sheet_count = 1       
+            while True:
+                if not sheet_count == 1:
+                    sheet_name = sheet_conf["name"] + "_" + str(sheet_count)
                 else:
-                    header_style = default_style
-                row_index = row_offset + 1
-                XLSXGenerator._draw_row(
-                        ws, result[0].keys(), row_index, col_offset, header_style)
-                row_offset = row_offset + 1
+                    sheet_name = sheet_conf["name"]
 
-            # draw body
-            if sheet_conf.get("style"):
-                body_style = sheet_conf.get("style")
-            else:
-                body_style = default_style
-            XLSXGenerator._draw_rows(ws, result, row_offset, col_offset, body_style)
+                if sheet_name not in wb.sheetnames:
+                    if not sheet_count == 1:
+                        ws = wb.copy_worksheet(wb[sheet_conf["name"]])
+                        ws.title = sheet_name
+                    else:
+                        wb.create_sheet(index=sheet_conf["index"], title=sheet_name)
+                        ws = wb[sheet_name]
+
+                sql_params.update({"limit": limit, "offset": offset})
+                result = self._query_by_params(sheet_conf["source"]["sql"], sql_params)
+                if not result: break
+
+                row_offset = sheet_conf["row_padding"]
+                col_offset = sheet_conf["col_padding"]
+                default_style = format_config.get("style")
+
+                # draw header
+                if sheet_conf["header"]:
+                    if sheet_conf.get("header_style"):
+                        header_style = sheet_conf.get("header_style")
+                    else:
+                        header_style = default_style
+                    row_index = row_offset + 1
+                    XLSXGenerator._draw_row(
+                            ws, result[0].keys(), row_index, col_offset, header_style)
+                    row_offset = row_offset + 1
+
+                # draw body
+                if sheet_conf.get("style"):
+                    body_style = sheet_conf.get("style")
+                else:
+                    body_style = default_style
+                XLSXGenerator._draw_rows(ws, result, row_offset, col_offset, body_style)
+
+                if limit is not None:
+                    offset = offset + limit
+                else:
+                    break
 
         # delete default worksheet
         if basefile is None:
             sheet_names = [x["name"] for x in format_config["sheets"]]
-            unused_sheets = list(set(wb.get_sheet_names()) - set(sheet_names))
+            unused_sheets = list(set(wb.get_sheet_names())
+                    - set(sheet_names) - set(additional_sheet_names))
             for sheet_name in unused_sheets:
                 ws = wb.get_sheet_by_name(sheet_name)
                 wb.remove_sheet(ws)
