@@ -139,6 +139,8 @@ class XLSXGenerator:
                         for row in ws.iter_rows(min_row=row_offset+1):
                             for cell in row:
                                 cell.value = None
+                else:
+                    ws = wb[sheet_name]
 
                 sql_params.update({"limit": limit, "offset": offset})
                 result = self._query_by_params(sheet_conf["source"]["sql"], sql_params)
